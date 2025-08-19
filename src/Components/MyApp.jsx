@@ -4,7 +4,7 @@ import emailjs from "@emailjs/browser";
 
 const GROUP_NAME = "4-2";
 
-// IDs EmailJS
+// IDs EmailJS (si quieres ocultarlos, muévelos a .env con prefijo VITE_)
 const EMAILJS_SERVICE_ID = "service_2kchrz6";
 const EMAILJS_TEMPLATE_ID = "template_z5m0rsd";
 const EMAILJS_PUBLIC_KEY  = "Jq93V4hq-fbPChlCw";
@@ -17,7 +17,7 @@ function formatDate(dateStr) {
 export default function MyApp() {
   const [dateStr, setDateStr] = useState(() => {
     const t = new Date();
-    return t.toISOString().split("T")[0];
+    return t.toISOString().split("T")[0]; // yyyy-mm-dd
   });
 
   // attendance[id] = true (asistió) | false (faltó)
@@ -60,30 +60,26 @@ export default function MyApp() {
     setAttendance(next);
   }
 
-  // Envío con EmailJS a plantilla con destinatario fijo
+  // Envío con EmailJS a plantilla con destinatario fijo (configurado en EmailJS)
   async function sendEmail() {
-    if (absentees.length === 0) {
-      setErrorMsg("No hay ausentes para reportar.");
-      setShowError(true);
-      return;
-    }
-
     const fecha = formatDate(dateStr);
-    // Asunto EXACTO como pediste originalmente:
-    const subject = `reporte de unasistencia grupo ${GROUP_NAME}  fecha- ${fecha}`;
+    const subject = `Reporte de Inasistencia grupo ${GROUP_NAME}`;
 
     const bodyHeader = `Reporte de inasistencia\nGrupo: ${GROUP_NAME}\nFecha: ${fecha}\n\n`;
     const bodyList = absentees.map((s, i) => `${i + 1}. ${s.name}`).join("\n");
-    const body = bodyHeader + (bodyList || "No hay ausentes.");
 
-    // Deben existir estas variables en tu plantilla: {{subject}} y {{body}}
-    // (Si en tu plantilla pusiste {{name}} o {{email}}, puedes quitarlas o enviarlas opcionalmente)
+    // Si no hay ausentes, mensaje por defecto:
+    const body =
+      absentees.length === 0
+        ? `${bodyHeader}Asistieron todos los estudiantes.`
+        : bodyHeader + bodyList;
+
     const templateParams = {
-      subject,
-      body,
-      // Opcional:
-      // name: "Asistencia 4-2", // si usas {{name}} como From Name
-      // email: "profesor@colegio.edu.co" // si usas {{email}} como Reply-To
+      subject, // {{subject}} en tu plantilla
+      body     // {{body}} en tu plantilla
+      // Si tu plantilla usa {{name}} o {{email}}, puedes añadirlos aquí:
+      // name: "Asistencia 4-2",
+      // email: "profesor@colegio.edu.co"
     };
 
     try {
@@ -114,7 +110,7 @@ export default function MyApp() {
               onChange={(e) => setDateStr(e.target.value)}
             />
           </label>
-          {/* Quitamos el input de correo porque el destinatario es fijo en EmailJS */}
+          {/* Sin input de correo: destinatario fijo en EmailJS */}
         </div>
         <div className="row">
           <button className="btn" onClick={() => markAll(true)}>
@@ -123,11 +119,7 @@ export default function MyApp() {
           <button className="btn outline" onClick={() => markAll(false)}>
             Marcar todos: Faltaron
           </button>
-          <button
-            className="btn primary"
-            onClick={sendEmail}
-            disabled={absentees.length === 0}
-          >
+          <button className="btn primary" onClick={sendEmail}>
             Enviar reporte
           </button>
         </div>
