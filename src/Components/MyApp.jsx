@@ -27,10 +27,11 @@ export default function MyApp() {
     return init;
   });
 
-  // Modales
+  // Estados para modales y envío
   const [showSuccess, setShowSuccess] = useState(false);
   const [showError, setShowError] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
+  const [isSending, setIsSending] = useState(false); // 👈 nuevo estado
 
   // Cargar asistencia guardada por fecha
   useEffect(() => {
@@ -62,6 +63,7 @@ export default function MyApp() {
 
   // Envío con EmailJS a plantilla con destinatario fijo (configurado en EmailJS)
   async function sendEmail() {
+    setIsSending(true); // 👈 mostrar "enviando"
     const fecha = formatDate(dateStr);
     const subject = `Reporte de Inasistencia grupo ${GROUP_NAME}`;
 
@@ -74,13 +76,7 @@ export default function MyApp() {
         ? `${bodyHeader}Asistieron todos los estudiantes.`
         : bodyHeader + bodyList;
 
-    const templateParams = {
-      subject, // {{subject}} en tu plantilla
-      body     // {{body}} en tu plantilla
-      // Si tu plantilla usa {{name}} o {{email}}, puedes añadirlos aquí:
-      // name: "Asistencia 4-2",
-      // email: "profesor@colegio.edu.co"
-    };
+    const templateParams = { subject, body };
 
     try {
       await emailjs.send(
@@ -94,6 +90,8 @@ export default function MyApp() {
       console.error(err);
       setErrorMsg("No se pudo enviar el correo. Revisa Service/Template/Public Key y la plantilla.");
       setShowError(true);
+    } finally {
+      setIsSending(false); // 👈 ocultar "enviando"
     }
   }
 
@@ -110,7 +108,6 @@ export default function MyApp() {
               onChange={(e) => setDateStr(e.target.value)}
             />
           </label>
-          {/* Sin input de correo: destinatario fijo en EmailJS */}
         </div>
         <div className="row">
           <button className="btn" onClick={() => markAll(true)}>
@@ -158,6 +155,16 @@ export default function MyApp() {
           </tbody>
         </table>
       </section>
+
+      {/* Modal de enviando */}
+      {isSending && (
+        <div className="modal">
+          <div className="modal-content">
+            <h3>⏳ Enviando...</h3>
+            <p>Por favor espera mientras se envía el reporte.</p>
+          </div>
+        </div>
+      )}
 
       {/* Modal de éxito */}
       {showSuccess && (
