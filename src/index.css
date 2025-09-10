@@ -138,6 +138,33 @@ input:checked + .slider:before { transform: translateX(18px); }
     white-space: nowrap;
   }
 }
+.table th {
+  text-align: left;     /* Alinea los títulos a la izquierda */
+}
+
+.table td {
+  vertical-align: middle; /* Centra verticalmente el contenido */
+}
+
+/* Dar proporción a columnas */
+.table th:nth-child(1),
+.table td:nth-child(1) {
+  width: 40px;  /* # */
+  text-align: center;
+}
+
+.table th:nth-child(2),
+.table td:nth-child(2) {
+  width: 60%;   /* Nombre */
+  text-align: left;
+}
+
+.table th:nth-child(3),
+.table td:nth-child(3) {
+  width: 30%;   /* Asistencia */
+  text-align: center;
+}
+
 
 .badge.yes { background: #dcfce7; color: var(--ok); }
 .badge.no { background: #fee2e2; color: var(--bad); }

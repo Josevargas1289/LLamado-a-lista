@@ -139,7 +139,7 @@ export default function MyApp() {
             {students.map((s, idx) => (
               <tr key={s.id}>
                 <td>{idx + 1}</td>
-                <td>{s.name}</td>
+                <td>{`${s.name.split(" ")[2] || ""} ${s.name.split(" ")[0] || ""}`}</td>
                 <td>
                   <label className="switch">
                     <input
