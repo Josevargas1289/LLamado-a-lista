@@ -139,6 +139,48 @@ input:checked + .slider:before { transform: translateX(18px); }
 .badge.yes { background: #dcfce7; color: var(--ok); }
 .badge.no { background: #fee2e2; color: var(--bad); }
 
+/* === Normaliza altura/estilo de fecha y botones === */
+input[type="date"],
+.btn {
+  height: 44px;
+  line-height: 44px;
+  border-radius: 12px;
+}
+
+/* iOS/Safari: quita estilo nativo y alinea */
+input[type="date"] {
+  appearance: none;
+  -webkit-appearance: none;
+  background: #fff;
+  border: 1px solid var(--border);
+  padding: 0 12px;
+  font-size: 14px;
+}
+
+/* iOS: icono del calendario más discreto */
+input[type="date"]::-webkit-calendar-picker-indicator {
+  opacity: 0.6;
+  margin-right: 4px;
+}
+
+/* La etiqueta "Fecha" a la misma altura visual */
+label > input[type="date"] {
+  margin-top: 4px;
+}
+
+/* ===== Layout de la fila de controles ===== */
+.row.controls {
+  gap: 10px;
+}
+
+@media (min-width: 601px) {
+  .row.controls {
+    align-items: end;
+  }
+  .row.controls label { width: 220px; }
+  .row.controls .btn { height: 40px; line-height: 40px; }
+}
+
 /* ==== Ajustes para pantallas pequeñas ==== */
 @media (max-width: 600px) {
   .container {
@@ -160,23 +202,42 @@ input:checked + .slider:before { transform: translateX(18px); }
     width: 100%;
   }
 
+  /* La fila de controles en columnas */
+  .row.controls {
+    display: grid;
+    grid-template-columns: 1fr;
+  }
+
+  .row.controls label,
+  .row.controls .btn {
+    width: 100%;
+  }
+
+  input[type="date"],
+  .btn {
+    font-size: 15px;
+    height: 42px;
+    line-height: 42px;
+    border-radius: 10px;
+  }
+
   /* Tabla más compacta */
   .table {
     display: block;
     width: 100%;
     border-collapse: collapse;
     overflow-x: auto;
-    font-size: 14px;      /* 👈 reduce texto */
+    font-size: 14px;
   }
 
   .table th, .table td {
-    padding: 6px;        /* 👈 menos espacio */
-    white-space: nowrap; /* evita que se partan nombres */
+    padding: 6px;
+    white-space: nowrap;
   }
 
   .table th:nth-child(1),
   .table td:nth-child(1) {
-    width: 28px;        /* más pequeño en móvil */
+    width: 28px;
   }
 
   .table th:nth-child(2),
@@ -189,4 +250,18 @@ input:checked + .slider:before { transform: translateX(18px); }
     width: 30%;
     text-align: center;
   }
+}
+
+/* Normaliza altura y centra texto en input y botones */
+input[type="date"],
+.btn {
+  display: inline-flex;         /* permite alinear contenido */
+  align-items: center;          /* centra verticalmente el texto */
+  justify-content: center;      /* centra horizontalmente el texto */
+  height: 44px;                 /* misma altura */
+  line-height: normal;          /* evita que el texto se descuadre */
+  border-radius: 12px;
+  font-size: 14px;
+  font-weight: 500;             /* mejor legibilidad */
+  padding: 0 14px;              /* espacio interno uniforme */
 }

@@ -7,7 +7,7 @@ const GROUP_NAME = "4-2";
 // IDs EmailJS (si quieres ocultarlos, muévelos a .env con prefijo VITE_)
 const EMAILJS_SERVICE_ID = "service_2kchrz6";
 const EMAILJS_TEMPLATE_ID = "template_z5m0rsd";
-const EMAILJS_PUBLIC_KEY  = "Jq93V4hq-fbPChlCw";
+const EMAILJS_PUBLIC_KEY = "Jq93V4hq-fbPChlCw";
 
 function formatDate(dateStr) {
   const d = new Date(dateStr + "T00:00:00");
@@ -15,42 +15,43 @@ function formatDate(dateStr) {
 }
 
 export default function MyApp() {
+  // === Estados principales ===
   const [dateStr, setDateStr] = useState(() => {
     const t = new Date();
     return t.toISOString().split("T")[0]; // yyyy-mm-dd
   });
 
-  // attendance[id] = true (asistió) | false (faltó)
   const [attendance, setAttendance] = useState(() => {
     const init = {};
     for (const s of students) init[s.id] = true;
     return init;
   });
 
-  // Estados para modales y envío
+  // === Estados para modales ===
+  const [isSending, setIsSending] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
   const [showError, setShowError] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
-  const [isSending, setIsSending] = useState(false); // 👈 nuevo estado
 
-  // Cargar asistencia guardada por fecha
+  // === Persistencia en localStorage ===
   useEffect(() => {
     const key = `attendance:${GROUP_NAME}:${dateStr}`;
     const saved = localStorage.getItem(key);
     if (saved) setAttendance(JSON.parse(saved));
   }, [dateStr]);
 
-  // Guardar cambios
   useEffect(() => {
     const key = `attendance:${GROUP_NAME}:${dateStr}`;
     localStorage.setItem(key, JSON.stringify(attendance));
   }, [attendance, dateStr]);
 
+  // === Cálculo de ausentes ===
   const absentees = useMemo(
     () => students.filter((s) => attendance[s.id] === false),
     [attendance]
   );
 
+  // === Funciones auxiliares ===
   function toggle(id) {
     setAttendance((prev) => ({ ...prev, [id]: !prev[id] }));
   }
@@ -61,16 +62,15 @@ export default function MyApp() {
     setAttendance(next);
   }
 
-  // Envío con EmailJS a plantilla con destinatario fijo (configurado en EmailJS)
+  // === Envío de correo con EmailJS ===
   async function sendEmail() {
-    setIsSending(true); // 👈 mostrar "enviando"
+    setIsSending(true);
     const fecha = formatDate(dateStr);
     const subject = `Reporte de Inasistencia grupo ${GROUP_NAME}`;
 
     const bodyHeader = `Reporte de inasistencia\nGrupo: ${GROUP_NAME}\nFecha: ${fecha}\n\n`;
     const bodyList = absentees.map((s, i) => `${i + 1}. ${s.name}`).join("\n");
 
-    // Si no hay ausentes, mensaje por defecto:
     const body =
       absentees.length === 0
         ? `${bodyHeader}Asistieron todos los estudiantes.`
@@ -88,18 +88,23 @@ export default function MyApp() {
       setShowSuccess(true);
     } catch (err) {
       console.error(err);
-      setErrorMsg("No se pudo enviar el correo. Revisa Service/Template/Public Key y la plantilla.");
+      setErrorMsg(
+        "No se pudo enviar el correo. Revisa Service/Template/Public Key y la plantilla."
+      );
       setShowError(true);
     } finally {
-      setIsSending(false); // 👈 ocultar "enviando"
+      setIsSending(false);
     }
   }
 
+  // === Renderizado ===
   return (
     <div className="container">
       <header className="card">
         <h1>Asistencia {GROUP_NAME}</h1>
-        <div className="row">
+
+        {/* Controles de fecha y botones */}
+        <div className="row controls">
           <label>
             Fecha
             <input
@@ -108,8 +113,7 @@ export default function MyApp() {
               onChange={(e) => setDateStr(e.target.value)}
             />
           </label>
-        </div>
-        <div className="row">
+
           <button className="btn" onClick={() => markAll(true)}>
             Marcar todos: Asistieron
           </button>
@@ -122,6 +126,7 @@ export default function MyApp() {
         </div>
       </header>
 
+      {/* Lista de estudiantes */}
       <section className="card">
         <h2>Lista de estudiantes</h2>
         <table className="table">
@@ -136,7 +141,10 @@ export default function MyApp() {
             {students.map((s, idx) => (
               <tr key={s.id}>
                 <td>{idx + 1}</td>
-                <td>{`${s.name.split(" ")[2] || ""} ${s.name.split(" ")[0] || ""}`}</td>
+                {/* Mostrar primer nombre + primer apellido */}
+                <td>{`${s.name.split(" ")[2] || ""} ${
+                  s.name.split(" ")[0] || ""
+                }`}</td>
                 <td>
                   <label className="switch">
                     <input
@@ -146,7 +154,9 @@ export default function MyApp() {
                     />
                     <span className="slider"></span>
                   </label>
-                  <span className={`badge ${attendance[s.id] ? "yes" : "no"}`}>
+                  <span
+                    className={`badge ${attendance[s.id] ? "yes" : "no"}`}
+                  >
                     {attendance[s.id] ? "Asistió" : "Faltó"}
                   </span>
                 </td>
@@ -172,7 +182,10 @@ export default function MyApp() {
           <div className="modal-content success">
             <h3>✅ Mensaje enviado</h3>
             <p>El reporte se envió correctamente.</p>
-            <button className="modal-btn" onClick={() => setShowSuccess(false)}>
+            <button
+              className="modal-btn"
+              onClick={() => setShowSuccess(false)}
+            >
               Cerrar
             </button>
           </div>
